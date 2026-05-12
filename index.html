@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>福德廟 — Earth God Oracle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #1a0f00;
+      display: flex; justify-content: center; align-items: flex-start;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+    #app {
+      width: 100%; max-width: 430px; min-height: 100vh;
+      background: #fdf9f0;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      width: 100%; background: #b07010;
+      padding: 7px 0 5px;
+      display: flex; justify-content: center; align-items: center; gap: 14px;
+      flex-shrink: 0;
+    }
+    .lan { display: flex; flex-direction: column; align-items: center; }
+    .lt  { width: 14px; height: 4px; background: #f5e042; border-radius: 3px 3px 0 0; }
+    .lb  { width: 18px; height: 24px; background: #b07010; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #f5e042; border: 1.5px solid #f5e042; font-weight: 700; font-family: 'Noto Serif TC', serif; }
+    .ll  { width: 2px; height: 7px; background: #f5e042; }
+    .lk  { width: 8px; height: 5px; background: #f5e042; border-radius: 0 0 4px 4px; }
+    .hdr { text-align: center; padding: 6px 0 4px; flex-shrink: 0; background: #fdf9f0; border-bottom: 1px solid rgba(176,112,16,.15); }
+    .hdr-t { color: #1a0f00; font-size: 17px; font-weight: 700; letter-spacing: 3px; font-family: 'Noto Serif TC', serif; }
+    .hdr-s { color: #b07010; font-size: 10px; opacity: .7; letter-spacing: 1px; margin-top: 1px; }
+
+    /* ── SCREEN SYSTEM ── */
+    .screen {
+      display: none; flex-direction: column; align-items: center;
+      flex: 1; width: 100%; min-height: 0;
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: #fdf9f0;
+      overflow-y: auto;
+    }
+    .screen.on { display: flex; position: relative; }
+
+    /* ── TRANSITIONS ── */
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:none; } }
+    @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+    .anim-up   { animation: fadeUp   .45s cubic-bezier(.22,.68,0,1.2) both; }
+    .anim-down { animation: fadeDown .35s ease both; }
+    .anim-in   { animation: fadeIn   .4s ease both; }
+
+    /* ── INTRO ── */
+    #s-intro { justify-content: center; padding: 0 24px 32px; }
+    .intro-inner { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+    /* ── GUIDE ── */
+    #s-guide { justify-content: flex-start; overflow-y: auto; }
+    .guide-inner { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 20px 20px 32px; gap: 0; }
+    .guide-title { text-align: center; font-size: 13px; color: #b07010; letter-spacing: 2px; opacity: .85; margin-bottom: 16px; font-family: 'Noto Serif TC', serif; }
+    .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 12px; }
+    .guide-card {
+      background: #fff; border-radius: 14px; border: 1px solid rgba(176,112,16,.18);
+      padding: 18px 10px 14px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .guide-card.saint { border-color: rgba(176,112,16,.4); background: #fffbf0; }
+    .guide-card.yin   { border-color: rgba(74,144,217,.35); background: #f5f8ff; }
+    .guide-card.laugh {
+      grid-column: 1 / -1; flex-direction: row; gap: 20px; padding: 16px 22px; border-color: rgba(176,112,16,.3); background: #fdf8e8;
+    }
+    .stones-row { display: flex; gap: 10px; align-items: center; }
+    .stone-img { width: 42px; height: 70px; object-fit: contain; }
+    .gc-label { font-size: 18px; font-weight: 700; font-family: 'Noto Serif TC', serif; }
+    .gc-label.saint { color: #b07010; }
+    .gc-label.yin   { color: #4a90d9; }
+    .gc-label.laugh { color: #c8820a; }
+    .gc-rom { font-size: 13px; color: #888; font-style: italic; }
+    .gc-meaning { font-size: 14px; color: #444; text-align: center; line-height: 1.65; }
+    .laugh-info { display: flex; flex-direction: column; gap: 5px; }
+    .guide-footer { font-size: 12px; color: #bbb; letter-spacing: .5px; margin-bottom: 24px; text-align: center; }
+
+    .yl { width: 300px; object-fit: contain; margin: 16px 0 12px; }
+    .bub {
+      width: 100%; background: #fff; border: 1px solid rgba(176,112,16,.25);
+      border-radius: 14px; padding: 14px 16px; position: relative; margin-bottom: 8px;
+    }
+    .bub::before { content:''; position:absolute; top:-9px; left:38px; border:5px solid transparent; border-bottom-color:rgba(176,112,16,.25); }
+    .bub::after  { content:''; position:absolute; top:-7px; left:39px; border:4px solid transparent; border-bottom-color:#fff; }
+    .bub-t { font-size: 16px; color: #2d1a05; line-height: 2.1; min-height: 28px; }
+    .cur { display:inline-block; width:1.5px; height:14px; background:#2d1a05; margin-left:2px; vertical-align:middle; animation: bl .8s step-end infinite; }
+    @keyframes bl { 50% { opacity:0; } }
+
+    .intro-spacer { flex: 1; min-height: 20px; }
+    .btn {
+      background: #b07010; color: #f5e042; border: 1.5px solid #f5e042;
+      border-radius: 8px; padding: 13px 32px; font-size: 15px; font-weight: 700;
+      letter-spacing: 1px; cursor: pointer; display: none;
+      transition: transform .1s, background .15s;
+      font-family: 'Noto Serif TC', serif;
+    }
+    .btn:hover  { background: #8a5800; }
+    .btn:active { transform: scale(.97); }
+    .btn.on { display: block; }
+
+    /* ── GAME ── */
+    #s-game { padding: 0; justify-content: flex-start; }
+    .ctr-bar {
+      display: flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(176,112,16,.2); border-radius: 20px;
+      padding: 5px 14px; margin: 8px 16px 4px;
+      background: rgba(176,112,16,.04); flex-shrink: 0;
+      width: calc(100% - 32px);
+    }
+    .ctr-lbl { color: #b07010; font-size: 10px; letter-spacing: 1.5px; }
+    .dots { display:flex; gap:5px; }
+    .dot { width:12px; height:12px; border-radius:50%; border:1.5px solid rgba(176,112,16,.28); background:transparent; transition: all .35s cubic-bezier(.34,1.56,.64,1); }
+    .dot.on { background:#b07010; border-color:#b07010; transform: scale(1.15); }
+    .throw-wrap { width:100%; flex:1; min-height:0; position:relative; background:#fdf8e8; border-top:1px solid rgba(176,112,16,.1); overflow:hidden; touch-action:none; }
+    canvas#gc { display:block; width:100%; height:100%; }
+    .meter-wrap { position:absolute; right:14px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:center; gap:5px; pointer-events:none; opacity:0; transition:opacity .2s; }
+    .meter-wrap.vis { opacity:1; }
+    .meter-pct { font-size:13px; font-weight:700; color:#b07010; }
+    .meter-track { width:20px; height:160px; background:rgba(0,0,0,.07); border-radius:10px; overflow:hidden; position:relative; border:1px solid rgba(176,112,16,.25); }
+    .meter-fill { position:absolute; bottom:0; left:0; right:0; background:#4caf50; border-radius:10px; transition:height .04s linear; }
+    .meter-lbl { font-size:9px; color:#b07010; font-weight:700; letter-spacing:.5px; }
+    .throw-btn-row { width:100%; display:flex; justify-content:center; align-items:center; padding:10px 0 8px; flex-shrink:0; background:#fff; border-top:1px solid rgba(176,112,16,.1); }
+    .hold-btn {
+      width:80px; height:80px; border-radius:50%; background:#b07010; border:2.5px solid #f5e042;
+      color:#f5e042; font-size:11px; font-weight:700; letter-spacing:.5px;
+      display:flex; align-items:center; justify-content:center; text-align:center;
+      cursor:pointer; touch-action:none; user-select:none;
+      box-shadow:0 4px 18px rgba(176,112,16,.32); transition:transform .1s, background .1s;
+      line-height:1.3; -webkit-tap-highlight-color:transparent;
+    }
+    .hold-btn.pressing { background:#7a4e00; transform:scale(.9); }
+    .res-area { width:100%; min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2px 0; flex-shrink:0; }
+    .res-name { font-size:19px; font-weight:700; letter-spacing:2px; font-family:'Noto Serif TC',serif; }
+    .res-rom  { font-size:13px; color:#999; font-style:italic; margin-top:1px; letter-spacing:.5px; }
+    .res-desc { font-size:13px; color:#aaa; margin-top:1px; }
+    .cs { color:#b07010; } .cy { color:#4a90d9; } .cl { color:#c8820a; }
+    .mini-row { display:flex; align-items:flex-end; gap:8px; width:100%; padding:2px 12px 10px; flex-shrink:0; }
+    .yl-sm { width:46px; height:46px; object-fit:contain; }
+    .mini-bub { flex:1; background:#fdf8e8; border:1px solid rgba(176,112,16,.18); border-radius:9px; padding:8px 12px; color:#5a3a10; font-size:13px; line-height:1.7; min-height:40px; }
+
+    /* ── FAIL / SUCCESS ── */
+    #s-fail, #s-success { padding:28px 20px 24px; justify-content:center; }
+    .yl-big { width:80px; height:80px; object-fit:contain; margin-bottom:12px; }
+    .fail-t { color:#4a90d9; font-size:19px; font-weight:700; letter-spacing:2px; margin-bottom:4px; font-family:'Noto Serif TC',serif; }
+    .fail-rom { font-size:13px; color:#aaa; font-style:italic; letter-spacing:.5px; margin-bottom:10px; }
+    .fail-m { color:#555; font-size:15px; text-align:center; line-height:1.9; margin-bottom:20px; max-width:280px; white-space:pre-line; }
+    .succ-t { color:#b07010; font-size:21px; font-weight:700; letter-spacing:3px; margin-bottom:3px; font-family:'Noto Serif TC',serif; }
+    .succ-s { color:#999; font-size:12px; letter-spacing:1.5px; margin-bottom:10px; }
+    .succ-m { color:#555; font-size:15px; text-align:center; line-height:1.9; max-width:270px; margin-bottom:20px; white-space:pre-line; }
+
+    /* gold shimmer animation on success */
+    .thread-svg { margin: 8px 0; }
+
+    /* pulse ring on success icon */
+    @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(176,112,16,.35); } 50% { box-shadow:0 0 0 14px rgba(176,112,16,0); } }
+    .pulse { animation: pulse 1.8s ease infinite; border-radius: 50%; }
+
+    /* dot pop animation */
+    @keyframes dotPop { 0% { transform:scale(0); opacity:0; } 60% { transform:scale(1.35); } 100% { transform:scale(1.15); opacity:1; } }
+    .dot.popping { animation: dotPop .4s cubic-bezier(.34,1.56,.64,1) both; }
+
+    /* ── TOUR CTA ── */
+    .tour-cta {
+      width: 100%; max-width: 300px;
+      background: #fffbf0; border: 1.5px solid rgba(176,112,16,.28);
+      border-radius: 14px; padding: 16px 18px; margin-bottom: 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      text-align: center;
+    }
+    .tour-cta-t { font-size: 13px; color: #b07010; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .85; }
+    .tour-cta-m { font-size: 14px; color: #555; line-height: 1.7; }
+    .tour-link {
+      font-size: 14px; font-weight: 700; color: #b07010;
+      text-decoration: none; border-bottom: 1.5px solid rgba(176,112,16,.35);
+      padding-bottom: 1px; letter-spacing: .3px;
+    }
+    .tour-link:hover { border-bottom-color: #b07010; }
+
+    /* ── FOOTER ── */
+    .app-footer {
+      width: 100%;
+      background: #1a0f00; color: #f5e042;
+      padding: 10px 20px; display: flex; align-items: center; justify-content: center;
+      gap: 12px; flex-shrink: 0; margin-top: auto;
+    }
+    .footer-logo { height: 32px; object-fit: contain; }
+    .footer-sep { opacity: .4; font-size: 13px; }
+    .footer-link { font-size: 12px; color: rgba(245,224,66,.75); text-decoration: none; letter-spacing: .3px; }
+    .footer-link:hover { color: #f5e042; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <div class="lan"><div class="lt"></div><div class="lb">福</div><div class="ll"></div><div class="lk"></div></div>
+    <div class="lan"><div class="lt"></div><div class="lb">德</div><div class="ll"></div><div class="lk"></div></div>
+    <div class="lan"><div class="lt"></div><div class="lb">廟</div><div class="ll"></div><div class="lk"></div></div>
+  </div>
+  <div class="hdr">
+    <div class="hdr-t">福德廟</div>
+    <div class="hdr-s">Tu Di Gong · God of Fortune · Taiwanese Blessing</div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="screen on" id="s-intro">
+    <div class="intro-inner">
+      <img class="yl" src="tudigong.png" alt="Tu Di Gong">
+      <div class="bub">
+        <div class="bub-t" id="spt"></div>
+      </div>
+      <div class="intro-spacer"></div>
+      <button class="btn" id="bStart">Begin the Ritual</button>
+    </div>
+  </div>
+
+  <!-- GUIDE -->
+  <div class="screen" id="s-guide">
+    <div class="guide-inner">
+      <div class="guide-title">三種筊 · the three throws</div>
+      <div class="guide-grid">
+        <div class="guide-card saint">
+          <div class="stones-row">
+            <img class="stone-img" src="Back.png" alt="flat">
+            <img class="stone-img" src="Front.png" alt="curved">
+          </div>
+          <div class="gc-label saint">聖筊</div>
+          <div class="gc-rom">sīn-pue</div>
+          <div class="gc-meaning">One flat, one curved.<br>Yes — the earth god blesses you.</div>
+        </div>
+        <div class="guide-card yin">
+          <div class="stones-row">
+            <img class="stone-img" src="Back.png" alt="flat">
+            <img class="stone-img" src="Back.png" alt="flat">
+          </div>
+          <div class="gc-label yin">陰筊</div>
+          <div class="gc-rom">im-pue</div>
+          <div class="gc-meaning">Both flat.<br>No — reconsider your path.</div>
+        </div>
+        <div class="guide-card laugh">
+          <div class="stones-row" style="gap:10px;">
+            <img class="stone-img" src="Front.png" alt="curved">
+            <img class="stone-img" src="Front.png" alt="curved">
+          </div>
+          <div class="laugh-info">
+            <div class="gc-label laugh">笑筊</div>
+            <div class="gc-rom">tshiò-pue</div>
+            <div class="gc-meaning" style="text-align:left;">Both curved.<br>The god laughs —<br>ask again.</div>
+          </div>
+        </div>
+      </div>
+      <div class="guide-footer">三聖筊 · three holy throws earns the blessing</div>
+      <button class="btn on" id="bGuideStart">I understand — begin</button>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="s-game">
+    <div class="ctr-bar">
+      <span class="ctr-lbl">HOLY THROWS</span>
+      <div class="dots" id="dots"></div>
+      <span style="color:#b07010;font-size:14px;font-weight:700;min-width:18px;text-align:center;" id="sNum">0</span>
+      <span style="font-size:10px;color:#bbb;">/ 3</span>
+    </div>
+    <div class="throw-wrap" id="throwWrap">
+      <canvas id="gc"></canvas>
+      <div class="meter-wrap" id="meter">
+        <div class="meter-pct" id="mPct">0%</div>
+        <div class="meter-track"><div class="meter-fill" id="mFill" style="height:0%"></div></div>
+        <div class="meter-lbl">力</div>
+      </div>
+    </div>
+    <div class="throw-btn-row">
+      <div class="hold-btn" id="holdBtn">HOLD<br>to throw</div>
+    </div>
+    <div class="res-area" id="resArea"></div>
+    <div class="mini-row">
+      <img class="yl-sm" src="tudigong.png" alt="">
+      <div class="mini-bub" id="miniBub">Hold your wish in mind.<br>Press &amp; hold — release to throw.</div>
+    </div>
+  </div>
+
+  <!-- FAIL -->
+  <div class="screen" id="s-fail">
+    <img class="yl-big" src="tudigong.png" alt="">
+    <div class="fail-t">陰筊</div>
+    <div class="fail-rom">im-pue</div>
+    <div class="fail-m" id="failMsg"></div>
+    <button class="btn on" id="bRetry">Open your heart again</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="screen" id="s-success">
+    <div style="font-size:48px; margin-bottom:6px;" class="pulse">🏮</div>
+    <div class="succ-t">福氣已降</div>
+    <div class="succ-s">Blessing received</div>
+    <svg class="thread-svg" width="240" height="44" viewBox="0 0 240 44">
+      <path d="M8 22 Q60 4 120 22 Q180 40 232 22" stroke="#b07010" stroke-width="2.5" fill="none" stroke-dasharray="240" stroke-dashoffset="240">
+        <animate attributeName="stroke-dashoffset" from="240" to="0" dur="1.4s" fill="freeze" begin="0.2s"/>
+      </path>
+      <circle cx="8"   cy="22" r="4" fill="#b07010" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".1s" fill="freeze" begin="0.1s"/></circle>
+      <circle cx="232" cy="22" r="4" fill="#b07010" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".1s" fill="freeze" begin="1.5s"/></circle>
+    </svg>
+    <div class="succ-m" id="succMsg"></div>
+    <div class="tour-cta">
+      <div class="tour-cta-t">Explore Taiwan</div>
+      <div class="tour-cta-m">Discover the best of Taiwan's culture, temples, and traditions.</div>
+      <a class="tour-link" href="https://mice.meettaiwan.com/meettaiwan/home/public/mt-site/202509/T-33846325.png?s=30248370BDB50BE1&c=68C88281B67519920ED8024AD696E250&fn=1D1FBD59E79345AE40C705383BEFDE5F" target="_blank">mice.meettaiwan.com</a>
+    </div>
+    <button class="btn on" id="bAgain">Ask again</button>
+  </div>
+
+  <div class="app-footer">
+    <img class="footer-logo"
+      src="https://mice.meettaiwan.com/meettaiwan/home/public/mt-site/202509/T-33846325.png?s=30248370BDB50BE1&c=68C88281B67519920ED8024AD696E250&fn=1D1FBD59E79345AE40C705383BEFDE5F"
+      alt="Meet Taiwan"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+    <span style="display:none; font-size:13px; font-weight:700; letter-spacing:1px; font-family:'Noto Serif TC',serif;">Meet Taiwan</span>
+    <span class="footer-sep">·</span>
+    <a class="footer-link" href="https://mice.meettaiwan.com/meettaiwan/" target="_blank">mice.meettaiwan.com</a>
+  </div>
+</div>
+
+<script>
+const imgBack  = new Image(); imgBack.src  = 'Back.png';
+const imgFront = new Image(); imgFront.src = 'Front.png';
+
+const LINES = [
+  "I am Tu Di Gong.",
+  "God of Earth and Fortune.",
+  "",
+  "Picture what you seek.",
+  "A wish, a worry, a hope.",
+  "",
+  "Three holy throws —",
+  "and I grant my blessing."
+];
+
+let ci = 0, disp = '';
+const spt = document.getElementById('spt');
+const bStart = document.getElementById('bStart');
+const full = LINES.join('\n');
+
+function typeChar() {
+  if (ci < full.length) {
+    disp += full[ci++];
+    spt.innerHTML = disp.replace(/\n/g,'<br>') + '<span class="cur"></span>';
+    setTimeout(typeChar, ci < 10 ? 60 : 28);
+  } else {
+    spt.innerHTML = disp.replace(/\n/g,'<br>');
+    bStart.classList.add('on');
+  }
+}
+setTimeout(typeChar, 500);
+
+// ── SCREEN TRANSITIONS ──
+function showS(id, dir) {
+  const cur = document.querySelector('.screen.on');
+  const nxt = document.getElementById(id);
+  if (!nxt || cur === nxt) return;
+  cur.classList.remove('on');
+  nxt.classList.add('on');
+  const anim = dir === 'up' ? 'anim-up' : dir === 'down' ? 'anim-down' : 'anim-in';
+  nxt.querySelectorAll(':scope > *, :scope > div > *').forEach((el, i) => {
+    el.classList.remove('anim-up','anim-down','anim-in');
+    void el.offsetWidth;
+    el.classList.add(anim);
+    el.style.animationDelay = (i * 0.04) + 's';
+  });
+}
+
+let saintCount = 0, throwing = false;
+const NEED = 3;
+const FAILS = [
+  "Your wish holds a little too much worry.\nBreathe first —\nthen ask again.",
+  "The earth heard something unclear.\nSettle your mind,\nand try once more.",
+  "Tu Di Gong smiles gently.\nPerhaps rethink the wish —\nthen return.",
+  "The ground is patient.\nSo is the blessing.\nCome back with a calm heart.",
+];
+const MINI = {
+  idle:  'Hold your wish in mind.\nPress & hold — release to throw.',
+  s1:    '一 One holy throw. Stay focused...',
+  s2:    '二 Two in a row. One more...',
+  laugh: '笑筊 — The god laughs. Try again with a clear mind.',
+  yin:   '陰筊 — Soften your heart and ask once more.',
+};
+
+const wrap = document.getElementById('throwWrap');
+const gc   = document.getElementById('gc');
+const ctx  = gc.getContext('2d');
+let W, H;
+function resize() {
+  W = wrap.clientWidth; H = wrap.clientHeight;
+  gc.width = W; gc.height = H;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function updateUI() {
+  document.getElementById('sNum').textContent = saintCount;
+  const d = document.getElementById('dots');
+  d.innerHTML = '';
+  for (let i = 0; i < NEED; i++) {
+    const e = document.createElement('div');
+    e.className = 'dot' + (i < saintCount ? ' on' : '');
+    d.appendChild(e);
+  }
+}
+updateUI();
+
+const meter   = document.getElementById('meter');
+const mFill   = document.getElementById('mFill');
+const mPct    = document.getElementById('mPct');
+const holdBtn = document.getElementById('holdBtn');
+let pressing = false, pressStart = 0, powerRaf = null;
+const MAX_HOLD = 1100;
+
+function getPower() { return Math.min(1, (Date.now() - pressStart) / MAX_HOLD); }
+
+function updateMeter() {
+  if (!pressing) return;
+  const p = getPower(), pct = Math.round(p * 100);
+  mFill.style.height = pct + '%';
+  mPct.textContent = pct + '%';
+  const r = p < .5 ? Math.round(p * 2 * 210) : 210;
+  const g = p < .5 ? 180 : Math.round((1 - p) * 2 * 180);
+  mFill.style.background = `rgb(${r},${g},30)`;
+  powerRaf = requestAnimationFrame(updateMeter);
+}
+
+function startPress(e) {
+  if (throwing) return;
+  e.preventDefault();
+  pressing = true; pressStart = Date.now();
+  holdBtn.classList.add('pressing');
+  holdBtn.innerHTML = '<span style="font-size:26px;line-height:1">↑</span>';
+  meter.classList.add('vis');
+  powerRaf = requestAnimationFrame(updateMeter);
+}
+
+function endPress(e) {
+  if (!pressing || throwing) return;
+  e.preventDefault();
+  const power = getPower();
+  pressing = false;
+  cancelAnimationFrame(powerRaf);
+  meter.classList.remove('vis');
+  mFill.style.height = '0%'; mPct.textContent = '0%';
+  holdBtn.classList.remove('pressing');
+  holdBtn.innerHTML = 'HOLD<br>to throw';
+  if (power < 0.05) return;
+  doThrow(power);
+}
+
+holdBtn.addEventListener('mousedown',  startPress);
+holdBtn.addEventListener('touchstart', startPress, { passive:false });
+document.addEventListener('mouseup',   endPress);
+document.addEventListener('touchend',  endPress);
+
+// ── PHYSICS ──
+const BASE_W = 56, BASE_H = 100;
+const GRAV = 0.52;
+function zScale(z) { return 0.55 + z * 0.55; }
+function landY(idx) { return H - 55 - idx * 28; }
+
+function makePiece(x, y, vx, vy, vz, spinX, spinY, spinZ, result, idx) {
+  return { x, y, z:-0.2, vx, vy, vz, spinX, spinY, spinZ,
+    angleX:Math.random()*Math.PI*2, angleY:Math.random()*Math.PI*2, angleZ:(Math.random()-.5)*.8,
+    result, idx, bounces:0, state:'flying', trail:[], age:0,
+    landZ:0, rockImg:null, rockAngle:0, rockVel:0, landFlipY:1 };
+}
+
+let pieces = [], rafId = null;
+
+function getCorrectImg(p) {
+  const useBack = p.result==='saint' ? p.idx===0 : p.result==='yin' ? true : false;
+  return useBack ? imgBack : imgFront;
+}
+function getFlyImg(p, angleY) {
+  const useBack = p.result==='saint' ? p.idx===0 : p.result==='yin' ? true : false;
+  const facingFront = Math.cos(angleY) >= 0;
+  return (facingFront ? useBack : !useBack) ? imgBack : imgFront;
+}
+function wrapAngle(a) {
+  while (a >  Math.PI) a -= Math.PI*2;
+  while (a < -Math.PI) a += Math.PI*2;
+  return a;
+}
+
+function stepPieces() {
+  let allDone = pieces.length > 0;
+  for (const p of pieces) {
+    if (p.state === 'settled') continue;
+    if (p.state === 'rocking') {
+      p.rockVel += -0.05 * p.rockAngle;
+      p.rockVel *= 0.85;
+      p.rockAngle += p.rockVel;
+      if (Math.abs(p.rockAngle) < 0.002 && Math.abs(p.rockVel) < 0.002) { p.rockAngle=0; p.rockVel=0; p.state='settled'; }
+      else allDone = false;
+      continue;
+    }
+    allDone = false; p.age++;
+    p.trail.push({ x:p.x, y:p.y, z:p.z, aZ:p.angleZ, aY:p.angleY, aX:p.angleX });
+    if (p.trail.length > 18) p.trail.shift();
+    p.vy += GRAV;
+    p.x += p.vx; p.y += p.vy; p.z += p.vz;
+    p.angleX += p.spinX; p.angleY += p.spinY; p.angleZ += p.spinZ;
+    p.vz *= 0.97;
+    if (p.z > 0.9)  { p.z=0.9;  p.vz=0; }
+    if (p.z < -0.5) { p.z=-0.5; }
+    const scl=zScale(p.z), hw=BASE_W*scl/2;
+    if (p.x < hw)     { p.x=hw;     p.vx= Math.abs(p.vx)*.45; }
+    if (p.x > W - hw) { p.x=W-hw;   p.vx=-Math.abs(p.vx)*.45; }
+    const ly=landY(p.idx);
+    if (p.y >= ly && p.vy > 0) {
+      p.y = ly;
+      if (p.bounces < 3 && Math.abs(p.vy) > 1.5) {
+        p.vy = -p.vy*(0.28-p.bounces*.06); p.vx*=0.55; p.vz*=0.3;
+        p.spinX*=0.3; p.spinY*=0.3; p.spinZ*=0.35; p.bounces++;
+      } else {
+        p.vy=p.vx=p.vz=p.spinX=p.spinY=p.spinZ=0; p.trail=[];
+        p.landZ=p.z; p.state='rocking'; p.rockImg=getCorrectImg(p);
+        p.rockAngle=Math.max(-0.5,Math.min(0.5,wrapAngle(p.angleZ)));
+        p.rockVel=Math.max(-0.08,Math.min(0.08,p.spinZ*.3));
+        p.landFlipY=0.3+0.7*Math.abs(Math.cos(p.angleX));
+      }
+    }
+  }
+  return allDone;
+}
+
+function drawSinglePiece(img, alpha, x, y, w, h, angleZ, scaleX, scaleY) {
+  if (!img||!img.complete||img.naturalWidth===0) return;
+  ctx.save();
+  ctx.globalAlpha=alpha; ctx.translate(x,y); ctx.rotate(angleZ); ctx.scale(scaleX,scaleY);
+  ctx.drawImage(img,-w/2,-h/2,w,h);
+  ctx.restore();
+}
+
+function drawPiece(p) {
+  const scl=zScale(p.state==='flying'?p.z:p.landZ), w=BASE_W*scl, h=BASE_H*scl;
+  if (p.state==='rocking') {
+    const rp=1-Math.min(1,Math.abs(p.rockAngle)/0.5);
+    const flatY=p.landFlipY+(0.82-p.landFlipY)*rp;
+    drawSinglePiece(p.rockImg,1,p.x,p.y,w,h,p.rockAngle,1,flatY); return;
+  }
+  if (p.state==='settled') { drawSinglePiece(p.rockImg,1,p.x,p.y,w,h,0,1,0.82); return; }
+  const tLen=p.trail.length;
+  for (let i=0;i<tLen;i++) {
+    const t=p.trail[i], frac=i/tLen, tScl=zScale(t.z), tw=BASE_W*tScl, th=BASE_H*tScl;
+    for (let b=0;b<4;b++) {
+      const ba=frac*.10*(1-b*.18); if(ba<=0)continue;
+      const bAY=t.aY+b*.12, img=getFlyImg(p,bAY);
+      const fx=Math.abs(Math.cos(bAY)), fy=0.25+0.75*Math.abs(Math.cos(t.aX));
+      drawSinglePiece(img,ba,t.x,t.y,tw,th,t.aZ+(b-1.5)*.06,fx,fy);
+    }
+  }
+  const alpha=p.age<6?0.55:0.82;
+  const fx=Math.abs(Math.cos(p.angleY)), fy=0.3+0.7*Math.abs(Math.cos(p.angleX));
+  drawSinglePiece(getFlyImg(p,p.angleY),alpha,p.x,p.y,w,h,p.angleZ,fx,fy);
+}
+
+function render() {
+  ctx.clearRect(0,0,W,H);
+  [...pieces].sort((a,b)=>a.z-b.z).forEach(drawPiece);
+}
+
+function doThrow(power) {
+  if (rafId) cancelAnimationFrame(rafId);
+  throwing = true;
+  const r = Math.random();
+  let result;
+  if      (power>.70) result=r<.55?'saint':r<.78?'yin':'laugh';
+  else if (power>.30) result=r<.42?'saint':r<.70?'yin':'laugh';
+  else                result=r<.25?'saint':r<.62?'yin':'laugh';
+
+  const cx=W/2, speed=5+power*15;
+  const vy0=-(speed*1.05+Math.random()*1.5);
+  const vxBase=(Math.random()-.5)*speed*.28;
+  const vz0=0.008+power*.018, spin=0.20+power*.12;
+
+  pieces = [
+    makePiece(cx-32+(Math.random()-.5)*10,H+16, vxBase-(0.8+Math.random()*1.2),vy0*(.96+Math.random()*.08),vz0*(.9+Math.random()*.2),(Math.random()-.5)*spin*1.1,spin*(Math.random()>.5?1:-1),(Math.random()-.5)*.12,result,0),
+    makePiece(cx+32+(Math.random()-.5)*10,H+16, vxBase+(0.8+Math.random()*1.2),vy0*(.96+Math.random()*.08),vz0*(.9+Math.random()*.2),(Math.random()-.5)*spin*1.1,spin*(Math.random()>.5?1:-1),(Math.random()-.5)*.12,result,1),
+  ];
+
+  let resultShown = false;
+  function loop() {
+    const allDone=stepPieces(); render();
+    if (!resultShown && pieces.every(p=>p.state!=='flying')) {
+      resultShown=true; throwing=false; onResult(result);
+    }
+    if (!allDone) rafId=requestAnimationFrame(loop);
+  }
+  rafId=requestAnimationFrame(loop);
+}
+
+const resArea = document.getElementById('resArea');
+const miniBub = document.getElementById('miniBub');
+
+function showResult(result) {
+  const MAP = {
+    saint: { name:'聖筊', rom:'sīn-pue',  desc:'Holy throw — yes.',          cls:'cs' },
+    yin:   { name:'陰筊', rom:'im-pue',   desc:'Lunar throw — reconsider.',  cls:'cy' },
+    laugh: { name:'笑筊', rom:'tshiò-pue',desc:'Laughing throw — try again.',cls:'cl' },
+  };
+  const m=MAP[result];
+  resArea.innerHTML=`
+    <div class="res-name ${m.cls}" style="animation:fadeUp .3s ease both">${m.name}</div>
+    <div class="res-rom"  style="animation:fadeUp .3s .05s ease both">${m.rom}</div>
+    <div class="res-desc" style="animation:fadeUp .3s .1s  ease both">${m.desc}</div>`;
+}
+
+function onResult(result) {
+  showResult(result);
+  if (result==='saint') {
+    saintCount++;
+    setTimeout(()=>{
+      const dots=document.querySelectorAll('.dot');
+      const d=dots[saintCount-1];
+      if(d){d.classList.add('on');d.classList.add('popping');d.addEventListener('animationend',()=>d.classList.remove('popping'),{once:true});}
+      document.getElementById('sNum').textContent=saintCount;
+    },0);
+    if (saintCount>=NEED) { setTimeout(goSuccess,1800); return; }
+    miniBub.textContent=[MINI.s1,MINI.s2][saintCount-1]||'Keep going!';
+  } else if (result==='yin') {
+    miniBub.textContent=MINI.yin; setTimeout(goFail,2200);
+  } else {
+    miniBub.textContent=MINI.laugh;
+  }
+}
+
+function goFail() {
+  document.getElementById('failMsg').textContent=FAILS[Math.floor(Math.random()*FAILS.length)];
+  showS('s-fail','up');
+}
+function goSuccess() {
+  document.getElementById('succMsg').textContent='You threw three holy throws.\nTu Di Gong smiles upon you —\nyour wish has been heard\nby the earth beneath your feet.\n\nGo forward. The earth walks with you.';
+  showS('s-success','up');
+}
+
+function resetGame() {
+  saintCount=0; updateUI();
+  if(rafId) cancelAnimationFrame(rafId);
+  pieces=[]; render();
+  resArea.innerHTML='';
+  miniBub.innerHTML='Hold your wish in mind.<br>Press & hold — release to throw.';
+  pressing=false; throwing=false;
+  meter.classList.remove('vis');
+  holdBtn.innerHTML='HOLD<br>to throw';
+  showS('s-game','up'); resize();
+}
+
+document.getElementById('bStart').addEventListener('click', () => { showS('s-guide','up'); });
+document.getElementById('bGuideStart').addEventListener('click', () => { resetGame(); });
+document.getElementById('bRetry').addEventListener('click',()=>{
+  miniBub.innerHTML='Breathe. Open your heart.<br>Try again...';
+  resetGame();
+});
+document.getElementById('bAgain').addEventListener('click',resetGame);
+</script>
+</body>
+</html>
