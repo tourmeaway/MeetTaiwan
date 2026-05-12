@@ -189,14 +189,15 @@
     /* ── FOOTER ── */
     .app-footer {
       width: 100%;
-      background: #1a0f00; color: #f5e042;
+      background: #fdf3dc; color: #7a5200;
+      border-top: 1.5px solid rgba(176,112,16,.2);
       padding: 10px 20px; display: flex; align-items: center; justify-content: center;
       gap: 12px; flex-shrink: 0; margin-top: auto;
     }
     .footer-logo { height: 32px; object-fit: contain; }
-    .footer-sep { opacity: .4; font-size: 13px; }
-    .footer-link { font-size: 12px; color: rgba(245,224,66,.75); text-decoration: none; letter-spacing: .3px; }
-    .footer-link:hover { color: #f5e042; }
+    .footer-sep { opacity: .4; font-size: 13px; color: #b07010; }
+    .footer-link { font-size: 12px; color: #b07010; text-decoration: none; letter-spacing: .3px; opacity: .75; }
+    .footer-link:hover { opacity: 1; }
   </style>
 </head>
 <body>
@@ -276,7 +277,7 @@
       <div class="meter-wrap" id="meter">
         <div class="meter-pct" id="mPct">0%</div>
         <div class="meter-track"><div class="meter-fill" id="mFill" style="height:0%"></div></div>
-        <div class="meter-lbl">力</div>
+        <div class="meter-lbl">PWR</div>
       </div>
     </div>
     <div class="throw-btn-row">
@@ -314,7 +315,7 @@
     <div class="tour-cta">
       <div class="tour-cta-t">Explore Taiwan</div>
       <div class="tour-cta-m">Discover the best of Taiwan's culture, temples, and traditions.</div>
-      <a class="tour-link" href="https://mice.meettaiwan.com/meettaiwan/home/public/mt-site/202509/T-33846325.png?s=30248370BDB50BE1&c=68C88281B67519920ED8024AD696E250&fn=1D1FBD59E79345AE40C705383BEFDE5F" target="_blank">mice.meettaiwan.com</a>
+      <a class="tour-link" href="https://mice.meettaiwan.com/meettaiwan/home/en/" target="_blank">mice.meettaiwan.com</a>
     </div>
     <button class="btn on" id="bAgain">Ask again</button>
   </div>
@@ -324,9 +325,9 @@
       src="https://mice.meettaiwan.com/meettaiwan/home/public/mt-site/202509/T-33846325.png?s=30248370BDB50BE1&c=68C88281B67519920ED8024AD696E250&fn=1D1FBD59E79345AE40C705383BEFDE5F"
       alt="Meet Taiwan"
       onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-    <span style="display:none; font-size:13px; font-weight:700; letter-spacing:1px; font-family:'Noto Serif TC',serif;">Meet Taiwan</span>
+    <span style="display:none; font-size:13px; font-weight:700; letter-spacing:1px; font-family:'Noto Serif TC',serif; color:#7a5200;">Meet Taiwan</span>
     <span class="footer-sep">·</span>
-    <a class="footer-link" href="https://mice.meettaiwan.com/meettaiwan/" target="_blank">mice.meettaiwan.com</a>
+    <a class="footer-link" href="https://mice.meettaiwan.com/meettaiwan/home/en/" target="_blank">mice.meettaiwan.com</a>
   </div>
 </div>
 
